@@ -1,1 +1,60 @@
 
+Comparing Techniques for Sentinment Analysis
+
+positive_training = df_train[df_train['label'] == 1]
+negative_training = df_train[df_train['label'] == 0]
+
+train_sample = pd.concat([   #1,000 pos / 1,000 neg
+    positive_training.sample(1000, random_state=42),
+    negative_training.sample(1000, random_state=42)
+]).sample(frac=1, random_state=42)
+
+positive_testing = df_test[df_test['label'] == 1]
+negative_testing = df_test[df_test['label'] == 0]
+
+test_sample = pd.concat([     # 1,000 pos / 1,000 neg
+    positive_testing.sample(1000, random_state=42),
+    negative_testing.sample(1000, random_state=42)
+]).sample(frac=1, random_state=42)
+
+
+### naive bayes
+vectorizer = TfidfVectorizer(
+    stop_words='english',
+    ngram_range=(1,2),
+    min_df=5,
+    max_df=0.8
+)
+
+X_train = vectorizer.fit_transform(train_sample['text'])
+X_test = vectorizer.transform(test_sample['text'])
+
+y_train = train_sample['label']
+y_test = test_sample['label']
+
+nb_model = MultinomialNB()
+
+start_time = time.time()
+nb_model.fit(X_train, y_train)
+training_time_nb = time.time() - start_time
+
+y_pred_nb = nb_model.predict(X_test)
+
+accuracy_nb = accuracy_score(y_test, y_pred_nb)
+precision_nb = precision_score(y_test, y_pred_nb)
+recall_nb = recall_score(y_test, y_pred_nb)
+f1_nb = f1_score(y_test, y_pred_nb)
+
+print("naive bayes results")
+print("accuracy:", accuracy_nb)
+print("precision:", precision_nb)
+print("recall:", recall_nb)
+print("f1:", f1_nb)
+print("training time:", training_time_nb)
+
+naive bayes results
+accuracy: 0.815
+precision: 0.8234086242299795
+recall: 0.802
+f1: 0.8125633232016211
+training time: 0.0045032501220703125
